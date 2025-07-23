@@ -1,50 +1,54 @@
+-- Beginning of SaeHub.lua
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-
 local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local root = character:WaitForChild("HumanoidRootPart")
+local runService = game:GetService("RunService")
 
--- حفظ الموقع
-local savedCFrame = nil
-local flying = false
-local flyConnection
-
--- GUI setup
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "Sae"
+gui.Name = "SaeHub"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 220, 0, 260)
-frame.Position = UDim2.new(0.5, -110, 0.5, -130)
+frame.Size = UDim2.new(0, 220, 0, 100)
+frame.Position = UDim2.new(0, 20, 0.5, -50)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
 
-local function createButton(text, yPos)
-	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(1, 0, 0, 40)
-	btn.Position = UDim2.new(0, 0, 0, yPos)
-	btn.Text = text
-	btn.TextSize = 18
-	btn.Font = Enum.Font.GothamBold
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.BackgroundColor3 = Color3.fromRGB(50 + yPos, 120 + yPos % 100, 180)
-	return btn
+local function createButton(text, order, callback)
+    local btn = Instance.new("TextButton", frame)
+    btn.Size = UDim2.new(1, -20, 0, 35)
+    btn.Position = UDim2.new(0, 10, 0, 10 + ((order - 1) * 40))
+    btn.BackgroundColor3 = Color3.fromRGB(40, 170, 255)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Text = text
+    btn.TextSize = 18
+    btn.Font = Enum.Font.GothamBold
+    btn.MouseButton1Click:Connect(callback)
+    return btn
 end
 
-local saveBtn = createButton("📌 حفظ موقعي", 0)
-local tpBtn = createButton("🚀 Teleport", 50)
-local speedBtn = createButton("⚡ تفعيل السرعة", 100)
-local resetSpeedBtn = createButton("⏪ إرجاع السرعة", 150)
-local flyBtn = createButton("🕊️ تفعيل/إيقاف الطيران", 200)
+createButton("Toggle No Die", 1, function()
+    runService:BindToRenderStep("NoDie", Enum.RenderPriority.Last.Value, function()
+        local char = player.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if hum and hum.Health < 1 then
+            hum.Health = 100
+        end
+    end)
+end)
 
--- وظائف الأزرار
-
-saveBtn.MouseButton1Click:Connect(function()
-	character = player.Character or player.CharacterAdded:Wait()
-	root =
+local speedEnabled = false
+createButton("Toggle Speed", 2, function()
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        if speedEnabled then
+            hum.WalkSpeed = 16
+            speedEnabled = false
+        else
+            hum.WalkSpeed = 100
+            speedEnabled = true
+        end
+    end
+end)
+-- End of SaeHub.lua
