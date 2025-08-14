@@ -1,23 +1,118 @@
+-- Sae Hub V2 - Kurd Hub Style
+
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
+local runService = game:GetService("RunService")
 
+local function getCharacter()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char, char:WaitForChild("Humanoid"), char:WaitForChild("HumanoidRootPart")
+end
+
+-- GUI
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.ResetOnSpawn = false
 
-local button = Instance.new("TextButton", gui)
-button.Size = UDim2.new(0, 200, 0, 50)
-button.Position = UDim2.new(0.5, -100, 0.9, -25)
-button.Text = "sae hub"
-button.BackgroundColor3 = Color3.fromRGB(40, 170, 255)
-button.TextColor3 = Color3.new(1, 1, 1)
-button.TextSize = 20
-button.Font = Enum.Font.GothamBold
-button.Active = true
-button.Draggable = true
+-- Main Frame
+local mainFrame = Instance.new("Frame", gui)
+mainFrame.Size = UDim2.new(0, 220, 0, 250)
+mainFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
+mainFrame.BackgroundTransparency = 0.2
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.Active = true
+mainFrame.Draggable = true
 
-button.MouseButton1Click:Connect(function()
-	local char = player.Character or player.CharacterAdded:Wait()
-	local root = char:WaitForChild("HumanoidRootPart")
+local corner = Instance.new("UICorner", mainFrame)
+corner.CornerRadius = UDim.new(0, 10)
 
-	root.CFrame = root.CFrame + Vector3.new(0, 120, 0)
+local stroke = Instance.new("UIStroke", mainFrame)
+stroke.Thickness = 2
+stroke.Color = Color3.fromRGB(255, 255, 255)
+
+-- Title
+local title = Instance.new("TextLabel", mainFrame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundTransparency = 1
+title.Text = "Sae Hub V2"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 20
+
+-- Layout
+local layout = Instance.new("UIListLayout", mainFrame)
+layout.Padding = UDim.new(0, 5)
+layout.FillDirection = Enum.FillDirection.Vertical
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Button function
+local function createButton(text, callback)
+    local btn = Instance.new("TextButton", mainFrame)
+    btn.Size = UDim2.new(1, -10, 0, 40)
+    btn.Position = UDim2.new(0, 5, 0, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(150, 0, 0) -- أحمر افتراضي
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 18
+
+    local btnCorner = Instance.new("UICorner", btn)
+    btnCorner.CornerRadius = UDim.new(0, 8)
+
+    local state = false
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        btn.BackgroundColor3 = state and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+        callback(state)
+    end)
+end
+
+-- السرعة للهروب من البيت
+local fastSpeed = false
+createButton("🚀 سرعة الهروب", function(active)
+    fastSpeed = active
+end)
+
+runService.RenderStepped:Connect(function()
+    if fastSpeed then
+        local _, hum = getCharacter()
+        if hum.WalkSpeed < 50 then
+            hum.WalkSpeed = hum.WalkSpeed + 2 -- زيادة تدريجية
+        end
+    else
+        local _, hum = getCharacter()
+        hum.WalkSpeed = 16
+    end
+end)
+
+-- حماية من الموت
+local godMode = false
+createButton("🛡 حماية من الموت", function(active)
+    godMode = active
+end)
+
+player.CharacterAdded:Connect(function()
+    local _, hum = getCharacter()
+    hum:GetPropertyChangedSignal("Health"):Connect(function()
+        if godMode and hum.Health < 100 then
+            hum.Health = 100
+        end
+    end)
+end)
+
+-- تليبورث فوق البيت
+local tpBtn = Instance.new("TextButton", mainFrame)
+tpBtn.Size = UDim2.new(1, -10, 0, 40)
+tpBtn.Position = UDim2.new(0, 5, 0, 0)
+tpBtn.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+tpBtn.Text = "⬆️ طلوع فوق البيت"
+tpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpBtn.Font = Enum.Font.SourceSansBold
+tpBtn.TextSize = 18
+local tpCorner = Instance.new("UICorner", tpBtn)
+tpCorner.CornerRadius = UDim.new(0, 8)
+
+tpBtn.MouseButton1Click:Connect(function()
+    local _, hum, root = getCharacter()
+    hum.Health = 100
+    root.CFrame = root.CFrame + Vector3.new(0, 120, 0)
 end)
